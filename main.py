@@ -3,6 +3,7 @@ import FaBo9Axis_MPU9250
 import time
 import json
 import socket
+import subprocess
 
 ###########################################
 # AWS IoT 接続情報
@@ -146,9 +147,13 @@ while True:
         elif CAMERA_ON_WORD in julius_input_word:
             # カメラ起動処理
             julius_action = CAMERA_ON_COMMAND
+
+            res = subprocess.Popen('chrominum-browser ./html/main.html --kiosk')
         elif CAMERA_OFF_WORD in julius_input_word:
             # カメラ終了処理
             julius_action = CAMERA_OFF_COMMAND
+
+            res = subprocess.Popen('pkill -o chromium')
         elif MOVE_WORD in julius_input_word:
             # 走行処理
             julius_action = STARTUP_COMMAND
