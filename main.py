@@ -32,9 +32,41 @@ JULIUS_PORT = 10500
 # Juliusサーバから1回に受け取るデータバイト数
 JULIUS_DATASIZE = 1024
 
+## 入力ワード
+STARTUP_WORD = "起動"
+CAMERA_ON_WORD = "カメラオン"
+CAMERA_OFF_WORD = "カメラオフ"
+MOVE_WORD = "発進"
+STOP_WORD = "停止"
+BACK_WORD = "バック"
+
+## 送信コマンド
+STARTUP_COMMAND = "startup"
+CAMERA_ON_COMMAND = "cameraOn"
+CAMERA_OFF_COMMAND = "cameraOff"
+MOVE_COMMAND = "move"
+STOP_COMMAND = "stop"
+BACK_COMMAND = "back"
+STRAIGHT_COMMAND = "straight"
+LEFT_COMMAND = "left"
+RIGHT_COMMAND = "right"
+
+## 左右角度の閾値
+LEFT_THRESHOLD = 2.0
+RIGHT_THRESHOLD = 10.0
+## I/O コントローラ
 MQTT_CLIENT = None
 JULIUS_SERVER = None
 AXIS_READER = None
+
+## 内部変数
+julius_input_word = ""
+julius_input_fin_flag = False
+julius_action = STOP_COMMAND
+axis_action = STRAIGHT_COMMAND
+
+send_action = ""
+send_direction = ""
 
 def init():
     # AWS IoT Connect Info
@@ -60,24 +92,35 @@ def init():
     global AXIS_READER
     AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
 
-def send_message(action):
-    if len(action) != 0:
-        message = {}
-        message['action'] = action
+def send_message(action, direction):
+    message = {}
+    message['action'] = action
+    message['direction'] = direction
 
-        messageJson = json.dumps(message)
+    messageJson = json.dumps(message)
 
-        global MQTT_CLIENT
-        MQTT_CLIENT.publish(TOPIC_NAME, messageJson, 1)
+    global MQTT_CLIENT
+    MQTT_CLIENT.publish(TOPIC_NAME, messageJson, 1)
 
 
 init()
 
-julius_action = ""
-fin_flag = False
 while True:
+    # モーションセンサーの値を取得
     accel = AXIS_READER.readAccel()
     print("accel Y: " + str(accel['y']))
+
+    if accel['y'] < LEFT_THRESHOLD:
+        axis_action = LEFT_COMMAND
+    elif accel['y'] > RIGHT_THRESHOLD:
+        axis_action = RIGHT_COMMAND
+    else:
+        axis_action = STRAIGHT_COMMAND
+
+    if send_direction != axis_action:
+        send_message(julius_action, axis_action)
+        send_direction = axis_action
+
     # Juliusサーバからデータを受信
     julius_data = JULIUS_SERVER.recv(JULIUS_DATASIZE).decode('utf-8')
 
@@ -86,25 +129,40 @@ while True:
         # <WORD>の後に、話した言葉が記載されている。
         index = line.find('WORD="')
         if index != -1:
-            # julius_actionに話した言葉を格納
-            julius_action = julius_action + line[index+6:line.find('"',index+6)]
+            # julius_input_wordに話した言葉を格納
+            julius_input_word = julius_input_word + line[index+6:line.find('"',index+6)]
             
         # 受信データに</RECOGOUT>'があれば、話終わり ⇒ フラグをTrue
         if '</RECOGOUT>' in line:
-            fin_flag = True
-            julius_action = julius_action.replace('[s]', '')
-            julius_action = julius_action.replace('[/s]', '')
+            julius_input_fin_flag = True
+            julius_input_word = julius_input_word.replace('[s]', '')
+            julius_input_word = julius_input_word.replace('[/s]', '')
             
+    if julius_input_fin_flag == True:
+        print(julius_input_word)
+        if STARTUP_WORD in julius_input_word:
+            # 起動処理
+            julius_action = STARTUP_COMMAND
+        elif CAMERA_ON_WORD in julius_input_word:
+            # カメラ起動処理
+            julius_action = CAMERA_ON_COMMAND
+        elif CAMERA_OFF_WORD in julius_input_word:
+            # カメラ終了処理
+            julius_action = CAMERA_OFF_COMMAND
+        elif MOVE_WORD in julius_input_word:
+            # 走行処理
+            julius_action = STARTUP_COMMAND
+        elif STOP_WORD in julius_input_word:
+            # 停止処理
+            julius_action = STOP_COMMAND
+        elif BACK_WORD in julius_input_word:
+            # バック走行処理
+            julius_action = BACK_COMMAND
 
-    if fin_flag == True:
-        print(julius_action)
-        if 'エンペラー起動' in julius_action:
-            send_message('startUp')
-        elif 'カメラを起動' in julius_action:
-            send_message('cameraStart')
-        elif 'カメラを停止' in julius_action:
-            send_message('cameraStop')
+        if send_action != julius_action:
+            send_message(julius_action, send_direction)
+            send_action = julius_action
 
-        fin_flag = False
-        julius_action = ""
+        julius_input_fin_flag = False
+        julius_input_word = ""
 
