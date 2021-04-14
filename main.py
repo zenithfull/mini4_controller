@@ -1,4 +1,6 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import FaBo9Axis_MPU9250
 import time
 import json
@@ -33,6 +35,11 @@ JULIUS_PORT = 10500
 # Juliusサーバから1回に受け取るデータバイト数
 JULIUS_DATASIZE = 1024
 
+###########################################
+# ローカルHTMLファイル情報
+###########################################
+LOCAL_HTML_FILE_PATH = '/home/pi/Documents/workspace/mini4_controller/html/main.html'
+
 ## 入力ワード
 STARTUP_WORD = "起動"
 CAMERA_ON_WORD = "カメラオン"
@@ -59,6 +66,7 @@ RIGHT_THRESHOLD = 10.0
 MQTT_CLIENT = None
 JULIUS_SERVER = None
 AXIS_READER = None
+BROWSER = None
 
 ## 内部変数
 julius_input_word = ""
@@ -92,6 +100,14 @@ def init():
     # 9Axis Controller Info
     global AXIS_READER
     AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
+
+    # Browser Info
+    global BROWSER
+    browser_option = Options()
+    browser_option.add_experimental_option("excludeSwitches", ['enable-automation'])
+    browser_option.add_argument('--kiosk')
+
+    BROWSER = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver", chrome_options=browser_option )
 
 def send_message(action, direction):
     message = {}
@@ -148,12 +164,12 @@ while True:
             # カメラ起動処理
             julius_action = CAMERA_ON_COMMAND
 
-            res = subprocess.Popen('chrominum-browser ./html/main.html --kiosk')
+            BROWSER.get('file//' + LOCAL_HTML_FILE_PATH)
         elif CAMERA_OFF_WORD in julius_input_word:
             # カメラ終了処理
             julius_action = CAMERA_OFF_COMMAND
 
-            res = subprocess.Popen('pkill -o chromium')
+            BROWSER.quit()
         elif MOVE_WORD in julius_input_word:
             # 走行処理
             julius_action = STARTUP_COMMAND
