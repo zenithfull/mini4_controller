@@ -101,14 +101,6 @@ def init():
     global AXIS_READER
     AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
 
-    # Browser Info
-    global BROWSER
-    browser_option = Options()
-    browser_option.add_experimental_option("excludeSwitches", ['enable-automation'])
-    browser_option.add_argument('--kiosk')
-
-    BROWSER = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver", chrome_options=browser_option )
-
 def send_message(action, direction):
     message = {}
     message['action'] = action
@@ -164,12 +156,19 @@ while True:
             # カメラ起動処理
             julius_action = CAMERA_ON_COMMAND
 
+            # Browser Info
+            browser_option = Options()
+            browser_option.add_experimental_option("excludeSwitches", ['enable-automation'])
+            browser_option.add_argument('--kiosk')
+
+            BROWSER = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver", chrome_options=browser_option )
             BROWSER.get('file//' + LOCAL_HTML_FILE_PATH)
         elif CAMERA_OFF_WORD in julius_input_word:
             # カメラ終了処理
             julius_action = CAMERA_OFF_COMMAND
 
             BROWSER.quit()
+            BROWSER = None
         elif MOVE_WORD in julius_input_word:
             # 走行処理
             julius_action = STARTUP_COMMAND
