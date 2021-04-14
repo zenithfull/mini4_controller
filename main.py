@@ -1,4 +1,5 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+import FaBo9Axis_MPU9250
 import time
 import json
 import socket
@@ -33,6 +34,7 @@ JULIUS_DATASIZE = 1024
 
 MQTT_CLIENT = None
 JULIUS_SERVER = None
+AXIS_READER = None
 
 def init():
     # AWS IoT Connect Info
@@ -52,7 +54,11 @@ def init():
     # Julius Server Connect Info
     global JULIUS_SERVER
     JULIUS_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    JULIUS_SERVER.connect(JULIUS_HOST, JULIUS_PORT)
+    JULIUS_SERVER.connect((JULIUS_HOST, JULIUS_PORT))
+    
+    # 9Axis Controller Info
+    global AXIS_READER
+    AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
 
 def send_message(action):
     if len(action) != 0:
@@ -68,8 +74,10 @@ def send_message(action):
 init()
 
 julius_action = ""
-global JULIUS_SERVER
+fin_flag = False
 while True:
+    accel = AXIS_READER.readAccel()
+    print("accel Y: " + str(accel['y']))
     # Juliusサーバからデータを受信
     julius_data = JULIUS_SERVER.recv(JULIUS_DATASIZE).decode('utf-8')
 
@@ -84,14 +92,19 @@ while True:
         # 受信データに</RECOGOUT>'があれば、話終わり ⇒ フラグをTrue
         if '</RECOGOUT>' in line:
             fin_flag = True
+            julius_action = julius_action.replace('[s]', '')
+            julius_action = julius_action.replace('[/s]', '')
+            
 
     if fin_flag == True:
-        fin_flag = False
-        julius_action = ""
-
+        print(julius_action)
         if 'エンペラー起動' in julius_action:
             send_message('startUp')
         elif 'カメラを起動' in julius_action:
             send_message('cameraStart')
         elif 'カメラを停止' in julius_action:
             send_message('cameraStop')
+
+        fin_flag = False
+        julius_action = ""
+
