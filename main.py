@@ -105,6 +105,7 @@ def send_message(action, direction):
     message = {}
     message['action'] = action
     message['direction'] = direction
+    print(message)
 
     messageJson = json.dumps(message)
 
@@ -162,13 +163,17 @@ while True:
             browser_option.add_argument('--kiosk')
 
             BROWSER = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver", chrome_options=browser_option )
-            BROWSER.get('file//' + LOCAL_HTML_FILE_PATH)
+            BROWSER.get('file://' + LOCAL_HTML_FILE_PATH)
+
+            subprocess.run(['vcgencmd', 'display_power 1'])
         elif CAMERA_OFF_WORD in julius_input_word:
             # カメラ終了処理
             julius_action = CAMERA_OFF_COMMAND
 
             BROWSER.quit()
             BROWSER = None
+
+            subprocess.run(['vcgencmd', 'display_power 0'])
         elif MOVE_WORD in julius_input_word:
             # 走行処理
             julius_action = STARTUP_COMMAND
