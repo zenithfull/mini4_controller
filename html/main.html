@@ -22,12 +22,13 @@
           <option value="H265">H265</option>
         </select>
         （Google Chrome、Microsoft Edge でのみで動作します）
-        </p> -->
+        </p>
         <button onclick="startConn();">接続</button>
         <button onclick="disconnect();">切断</button>
-      </div>
+      </div> -->
+      <div style="height: 5px"></div>
       <div style="text-align:center;">
-        <video id="remote-video" autoplay playsinline controls style="width: 600px; height: 600px; border: 1px solid black;"></video>
+        <video id="remote-video" autoplay muted playsinline controls style="width: 400px; height: 300px; border: 1px solid black;"></video>
       </div>
       <script src="https://cdn.jsdelivr.net/npm/@open-ayame/ayame-web-sdk@2020.3.0/dist/ayame.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.7.0/qs.min.js"></script>
@@ -62,6 +63,9 @@
         };
         //document.querySelector("#roomIdInput").value = roomId;
         //document.querySelector("#clientIdInput").value = options.clientId;
+        window.onload = function() {
+          startConn();
+        }
       </script>
   </body>
 </html>
