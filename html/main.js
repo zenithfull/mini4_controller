@@ -6,10 +6,10 @@ let audioCodec = null;
 let signalingKey = 'Nlqlm3fKd-ABK5IPoM0LS3pSPgu0DB8o_vNqB1OOahbRn634';
 
 function onChangeVideoCodec() {
-  videoCodec = document.getElementById("video-codec").value;
-  if (videoCodec == 'none') {
-    videoCodec = null;
-  }
+//  videoCodec = document.getElementById("video-codec").value;
+//  if (videoCodec == 'none') {
+//    videoCodec = null;
+//  }
 }
 // query string から roomId, clientId を取得するヘルパー
 function parseQueryString() {
