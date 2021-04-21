@@ -44,9 +44,14 @@ LOCAL_HTML_FILE_PATH = '/home/pi/Documents/workspace/mini4_controller/html/main.
 STARTUP_WORD = "起動"
 CAMERA_ON_WORD = "カメラオン"
 CAMERA_OFF_WORD = "カメラオフ"
-MOVE_WORD = "発進"
-STOP_WORD = "停止"
-BACK_WORD = "バック"
+MOVE_WORD_1 = "発進"
+MOVE_WORD_2 = "レッツゴー"
+STOP_WORD_1 = "停止"
+STOP_WORD_2 = "ストップ"
+STOP_WORD_3 = "止まれ"
+BACK_WORD_1 = "バック"
+BACK_WORD_2 = "後退"
+END_WORD = "終了"
 
 ## 送信コマンド
 STARTUP_COMMAND = "startup"
@@ -58,10 +63,11 @@ BACK_COMMAND = "back"
 STRAIGHT_COMMAND = "straight"
 LEFT_COMMAND = "left"
 RIGHT_COMMAND = "right"
+END_COMMAND = "end"
 
 ## 左右角度の閾値
-LEFT_THRESHOLD = 2.0
-RIGHT_THRESHOLD = 10.0
+LEFT_THRESHOLD = 50.0
+RIGHT_THRESHOLD = 70.0
 ## I/O コントローラ
 MQTT_CLIENT = None
 JULIUS_SERVER = None
@@ -117,12 +123,12 @@ init()
 
 while True:
     # モーションセンサーの値を取得
-    accel = AXIS_READER.readAccel()
-    print("accel Y: " + str(accel['y']))
+    magnet = AXIS_READER.readMagnet()
+    print("magnet X: " + str(magnet['x']))
 
-    if accel['y'] < LEFT_THRESHOLD:
+    if magnet['x'] < LEFT_THRESHOLD:
         axis_action = LEFT_COMMAND
-    elif accel['y'] > RIGHT_THRESHOLD:
+    elif magnet['x'] > RIGHT_THRESHOLD:
         axis_action = RIGHT_COMMAND
     else:
         axis_action = STRAIGHT_COMMAND
@@ -174,15 +180,30 @@ while True:
             BROWSER = None
 
             subprocess.run(['vcgencmd', 'display_power 0'])
-        elif MOVE_WORD in julius_input_word:
+        elif MOVE_WORD_1 in julius_input_word:
             # 走行処理
             julius_action = STARTUP_COMMAND
-        elif STOP_WORD in julius_input_word:
+        elif MOVE_WORD_2 in julius_input_word:
+            # 走行処理
+            julius_action = STARTUP_COMMAND
+        elif STOP_WORD_1 in julius_input_word:
             # 停止処理
             julius_action = STOP_COMMAND
-        elif BACK_WORD in julius_input_word:
+        elif STOP_WORD_2 in julius_input_word:
+            # 停止処理
+            julius_action = STOP_COMMAND
+        elif STOP_WORD_3 in julius_input_word:
+            # 停止処理
+            julius_action = STOP_COMMAND
+        elif BACK_WORD_1 in julius_input_word:
             # バック走行処理
             julius_action = BACK_COMMAND
+        elif BACK_WORD_2 in julius_input_word:
+            # バック走行処理
+            julius_action = BACK_COMMAND
+        elif END_WORD in julius_input_word:
+            # 終了処理
+            julius_action = END_COMMAND
 
         if send_action != julius_action:
             send_message(julius_action, send_direction)
