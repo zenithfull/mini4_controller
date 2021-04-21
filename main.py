@@ -66,8 +66,8 @@ RIGHT_COMMAND = "right"
 END_COMMAND = "end"
 
 ## 左右角度の閾値
-LEFT_THRESHOLD = 50.0
-RIGHT_THRESHOLD = 70.0
+LEFT_THRESHOLD = -3.0
+RIGHT_THRESHOLD = 3.0
 ## I/O コントローラ
 MQTT_CLIENT = None
 JULIUS_SERVER = None
@@ -126,12 +126,12 @@ init()
 
 while True:
     # モーションセンサーの値を取得
-    magnet = AXIS_READER.readMagnet()
-    print("magnet X: " + str(magnet['x']))
+    accel = AXIS_READER.readAccel()
+    print("accel Z: " + str(accel['z']))
 
-    if magnet['x'] < LEFT_THRESHOLD:
+    if accel['z'] < LEFT_THRESHOLD:
         axis_action = LEFT_COMMAND
-    elif magnet['x'] > RIGHT_THRESHOLD:
+    elif accel['z'] > RIGHT_THRESHOLD:
         axis_action = RIGHT_COMMAND
     else:
         axis_action = STRAIGHT_COMMAND
