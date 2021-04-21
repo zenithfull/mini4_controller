@@ -107,6 +107,9 @@ def init():
     global AXIS_READER
     AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
 
+    # display power off
+    subprocess.run(['vcgencmd', 'display_power 0'])
+
 def send_message(action, direction):
     message = {}
     message['action'] = action
