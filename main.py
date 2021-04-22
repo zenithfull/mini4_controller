@@ -108,7 +108,7 @@ def init():
     AXIS_READER = FaBo9Axis_MPU9250.MPU9250()
 
     # display power off
-    subprocess.run(['vcgencmd', 'display_power 0'])
+#    subprocess.run(['vcgencmd', 'display_power 0'])
 
 def send_message(action, direction):
     message = {}
@@ -127,7 +127,7 @@ init()
 while True:
     # モーションセンサーの値を取得
     accel = AXIS_READER.readAccel()
-    print("accel Z: " + str(accel['z']))
+#    print("accel Z: " + str(accel['z']))
 
     if accel['z'] < LEFT_THRESHOLD:
         axis_action = LEFT_COMMAND
@@ -174,15 +174,16 @@ while True:
             BROWSER = webdriver.Chrome(executable_path="/usr/lib/chromium-browser/chromedriver", chrome_options=browser_option )
             BROWSER.get('file://' + LOCAL_HTML_FILE_PATH)
 
-            subprocess.run(['vcgencmd', 'display_power 1'])
+#            subprocess.run(['vcgencmd', 'display_power 1'])
         elif CAMERA_OFF_WORD in julius_input_word:
             # カメラ終了処理
             julius_action = CAMERA_OFF_COMMAND
 
-            BROWSER.quit()
-            BROWSER = None
+            if BROWSER != None:
+                BROWSER.quit()
+                BROWSER = None
 
-            subprocess.run(['vcgencmd', 'display_power 0'])
+#            subprocess.run(['vcgencmd', 'display_power 0'])
         elif MOVE_WORD_1 in julius_input_word:
             # 走行処理
             julius_action = MOVE_COMMAND
