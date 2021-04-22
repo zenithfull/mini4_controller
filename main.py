@@ -185,10 +185,10 @@ while True:
             subprocess.run(['vcgencmd', 'display_power 0'])
         elif MOVE_WORD_1 in julius_input_word:
             # 走行処理
-            julius_action = STARTUP_COMMAND
+            julius_action = MOVE_COMMAND
         elif MOVE_WORD_2 in julius_input_word:
             # 走行処理
-            julius_action = STARTUP_COMMAND
+            julius_action = MOVE_COMMAND
         elif STOP_WORD_1 in julius_input_word:
             # 停止処理
             julius_action = STOP_COMMAND
